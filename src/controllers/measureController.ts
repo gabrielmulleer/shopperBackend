@@ -66,15 +66,13 @@ export const uploadMeasure = async (req: Request, res: Response) => {
     }
 
     // Chama o serviço para processar a imagem usando a API do Google Gemini
-    const geminiResult = await processImageWithGeminiAPI(image)
+    const geminiResult = await processImageWithGeminiAPI(image, measure_type)
 
     if (!geminiResult.success) {
       return res
         .status(500)
         .json({ message: 'Failed to process image', error: geminiResult.error })
     }
-
-    // Salva a leitura no banco de dados
     const measure = new Measure({
       customer_code,
       measure_datetime,
