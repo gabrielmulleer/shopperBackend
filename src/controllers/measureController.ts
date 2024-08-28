@@ -180,7 +180,7 @@ export const listMeasuresByCustomer = async (req: Request, res: Response) => {
       ) {
         return res.status(400).json({
           error_code: 'INVALID_TYPE',
-          error_description: 'Tipo de medição não permitida',
+          error_description: 'Measurement type not allowed',
         })
       }
       query.measure_type = measure_type.toUpperCase() // Adicionando o filtro de tipo
@@ -194,7 +194,7 @@ export const listMeasuresByCustomer = async (req: Request, res: Response) => {
     if (measures.length === 0) {
       return res.status(404).json({
         error_code: 'MEASURES_NOT_FOUND',
-        error_description: 'Nenhuma leitura encontrada',
+        error_description: 'No readings found',
       })
     }
 
