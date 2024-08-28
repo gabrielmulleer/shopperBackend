@@ -1,14 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import dotenv from 'dotenv'
+
 dotenv.config()
-// Função para gerar um URL temporário (mock)
-function generateTempUrl(base64Image: string): string {
-  // Na prática, você precisaria implementar uma lógica para armazenar
-  // a imagem e gerar uma URL temporária real
-  return `https://temp-image-storage.com/${uuidv4()}.jpg`
-}
-//
+
 export async function processImageWithGeminiAPI(
   base64Image: string,
   measureType: string,
@@ -49,13 +44,9 @@ export async function processImageWithGeminiAPI(
     // Gere um GUID
     const measureUuid = uuidv4()
 
-    // Gere uma URL temporária para a imagem
-    const imageUrl = generateTempUrl(base64Image)
-
     return {
       success: true,
       value: measureValue.value,
-      image_url: imageUrl,
       uuid: measureUuid,
     }
   } catch (error: any) {
