@@ -102,3 +102,56 @@ export const uploadMeasure = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error', error })
   }
 }
+
+export const confirmMeasure = async (req: Request, res: Response) => {
+  try {
+    const { measure_uuid, confirmed_value } = req.body
+
+    // Validar o tipo de dados dos parâmetros
+    if (!measure_uuid || typeof measure_uuid !== 'string') {
+      return res.status(400).json({
+        error_code: 'INVALID_DATA',
+        error_description: 'Measure UUID is required and must be a string.',
+      })
+    }
+
+    if (
+      typeof confirmed_value !== 'string' ||
+      !/^\d+(\.\d+)?$/.test(confirmed_value)
+    ) {
+      return res.status(400).json({
+        error_code: 'INVALID_DATA',
+        error_description:
+          'Confirmed value must be a string representing a decimal number.',
+      })
+    }
+
+    // Verificar se o código de leitura informado existe
+    const measure = await Measure.findOne({ measure_uuid })
+
+    if (!measure) {
+      return res.status(404).json({
+        error_code: 'MEASURE_NOT_FOUND',
+        error_description: 'Measure not found for the provided UUID.',
+      })
+    }
+
+    // Verificar se o código de leitura já foi confirmado
+    if (measure.has_confirmed) {
+      return res.status(409).json({
+        error_code: 'CONFIRMATION_DUPLICATE',
+        error_description: 'The measure has already been confirmed.',
+      })
+    }
+
+    // Atualizar o valor confirmado e marcar como confirmado
+    measure.measure_value = confirmed_value
+    measure.has_confirmed = true
+    await measure.save()
+
+    return res.status(200).json({ success: true })
+  } catch (error) {
+    console.error('Error confirming measure:', error)
+    res.status(500).json({ message: 'Server error', error })
+  }
+}
