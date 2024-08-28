@@ -1,8 +1,9 @@
 import { Router } from 'express'
-import { uploadMeasure } from '../controllers/measureController'
+import { confirmMeasure, uploadMeasure } from '../controllers/measureController'
 
 const router = Router()
 
 router.post('/upload', uploadMeasure)
+router.patch('/confirm', confirmMeasure)
 
 export default router
