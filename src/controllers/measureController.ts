@@ -63,7 +63,7 @@ export const uploadMeasure = async (req: Request, res: Response) => {
     if (existingMeasure) {
       return res.status(409).json({
         error_code: 'DOUBLE_REPORT',
-        error_description: 'Leitura do mês já realizada',
+        error_description: 'Reading for the month already completed',
       })
     }
 
