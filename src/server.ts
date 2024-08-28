@@ -4,6 +4,7 @@ import cors from 'cors'
 import connectDB from './config/db'
 import measureRoutes from './routes/measureRoutes'
 import bodyParser from 'body-parser'
+import path from 'path'
 
 dotenv.config()
 connectDB()
@@ -20,6 +21,8 @@ app.use(
 )
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
+
+app.use('/temp', express.static(path.join(__dirname, '..', 'temp')))
 
 app.use('/api/measures', measureRoutes)
 

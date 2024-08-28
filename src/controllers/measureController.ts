@@ -2,6 +2,8 @@ import { Request, Response } from 'express'
 import Measure from '../models/Measure'
 import { processImageWithGeminiAPI } from '../services/geminiService'
 import moment from 'moment'
+import { generateTempUrl, saveBase64Image } from '../utils/generate-image'
+import { v4 as uuidv4 } from 'uuid'
 
 // Função para validar se a string é base64
 const isBase64 = (str: string) => {
@@ -67,6 +69,11 @@ export const uploadMeasure = async (req: Request, res: Response) => {
 
     // Chama o serviço para processar a imagem usando a API do Google Gemini
     const geminiResult = await processImageWithGeminiAPI(image, measure_type)
+    const fileName = `${geminiResult.uuid || uuidv4()}.jpg`
+
+    await saveBase64Image(fileName, image)
+    // Gere uma URL temporária para a imagem
+    const imageUrl = generateTempUrl(req, fileName)
 
     if (!geminiResult.success) {
       return res
@@ -79,14 +86,14 @@ export const uploadMeasure = async (req: Request, res: Response) => {
       measure_type,
       measure_value: geminiResult.value,
       has_confirmed: false,
-      image_url: geminiResult.image_url,
+      image_url: imageUrl,
       measure_uuid: geminiResult.uuid,
     })
 
     await measure.save()
 
     return res.status(200).json({
-      image_url: measure.image_url,
+      image_url: imageUrl,
       measure_value: measure.measure_value,
       measure_uuid: measure.measure_uuid,
     })
