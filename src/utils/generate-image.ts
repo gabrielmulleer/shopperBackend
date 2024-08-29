@@ -7,16 +7,49 @@ import express from 'express'
 export function saveBase64Image(
   fileName: string,
   base64Image: string,
-): Promise<string> {
+): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Assumindo que a string é puro base64, sem prefixo
-    const imageData = Buffer.from(base64Image, 'base64')
+    let base64Data: string
 
-    const filePath = path.join(__dirname, '..', '..', 'temp', fileName)
+    if (base64Image.includes(';base64,')) {
+      // Se a string contém o prefixo, removemos ele
+      base64Data = base64Image.split(';base64,').pop() || ''
+    } else {
+      // Se não contém o prefixo, assumimos que é apenas os dados base64
+      base64Data = base64Image
+    }
+
+    // Verificação adicional para garantir que temos dados
+    if (!base64Data) {
+      return reject(new Error('Invalid base64 string'))
+    }
+
+    const imageData = Buffer.from(base64Data, 'base64')
+    const tempDir = path.join(__dirname, '..', '..', 'temp')
+    const filePath = path.join(tempDir, fileName)
+
+    // Verificar se a pasta temp existe, se não, criar
+    if (!fs.existsSync(tempDir)) {
+      try {
+        fs.mkdirSync(tempDir, { recursive: true })
+      } catch (err) {
+        if (err instanceof Error) {
+          return reject(
+            new Error(`Failed to create temp directory: ${err.message}`),
+          )
+        } else {
+          return reject(
+            new Error(
+              'Failed to create temp directory due to an unknown error',
+            ),
+          )
+        }
+      }
+    }
 
     fs.writeFile(filePath, imageData, (err) => {
       if (err) reject(err)
-      else resolve(fileName)
+      else resolve()
     })
   })
 }
@@ -30,3 +63,4 @@ export function generateTempUrl(
   const protocol = req.protocol
   return `${protocol}://${host}/temp/${fileName}`
 }
+4
