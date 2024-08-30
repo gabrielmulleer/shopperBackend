@@ -1,8 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import dotenv from 'dotenv'
-
-dotenv.config()
 
 export async function processImageWithGeminiAPI(
   base64Image: string,

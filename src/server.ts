@@ -6,7 +6,9 @@ import measureRoutes from './routes/measureRoutes'
 import bodyParser from 'body-parser'
 import path from 'path'
 
-dotenv.config()
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' })
+}
 connectDB()
 
 const app = express()
