@@ -8,17 +8,14 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
-      - PORT=8080
-      - MONGO_URI=mongodb://mongo:27017/teste_shopper_db
-    volumes:
-      - ./src:/usr/src/app/src
-      - ./dist:/usr/src/app/dist
-      - /usr/src/app/node_modules
+      NODE_ENV: production
+      PORT: 8080
+      MONGO_URI: mongodb://mongo:27017/teste_shopper_db
     depends_on:
       - mongo
-    entrypoint: ['sh', '-c', './create-env.sh && npm run dev']
-  # Serviço para o MongoDB
+    # Comando de entrada para o ambiente de produção
+    command: ['node', 'dist/server.js']
+
   mongo:
     image: mongo:6
     ports:
@@ -28,6 +25,5 @@ services:
     environment:
       MONGO_INITDB_DATABASE: teste_shopper_db
 
-# Volumes para persistir os dados do MongoDB
 volumes:
   mongo-data:
