@@ -38,12 +38,13 @@ export async function processImageWithGeminiAPI(
 
     const response = result.response
     const measureValue = JSON.parse(response.text())
+    const floatMeasureValue = parseFloat(measureValue.value)
     // Gere um GUID
     const measureUuid = uuidv4()
 
     return {
       success: true,
-      value: measureValue.value,
+      value: floatMeasureValue,
       uuid: measureUuid,
     }
   } catch (error: any) {
