@@ -6,54 +6,10 @@ import { generateTempUrl, saveBase64Image } from '../utils/generate-image'
 import { v4 as uuidv4 } from 'uuid'
 import { extractBase64FromDataUri } from '../utils/extract-base64'
 
-// Função para validar se a string é base64
-const isBase64 = (str: string) => {
-  try {
-    return Buffer.from(str, 'base64').toString('base64') === str
-  } catch {
-    return false
-  }
-}
-
 export const uploadMeasure = async (req: Request, res: Response) => {
   try {
     const { customer_code, image, measure_datetime, measure_type } = req.body
-    const base64Image = extractBase64FromDataUri(image)
-    // Validações
-    if (!customer_code || typeof customer_code !== 'string') {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description: 'Customer code is required and must be a string',
-      })
-    }
-
-    if (
-      !base64Image ||
-      typeof base64Image !== 'string' ||
-      !isBase64(base64Image)
-    ) {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description:
-          'Image is required and must be a valid base64 string',
-      })
-    }
-
-    if (!measure_datetime || isNaN(Date.parse(measure_datetime))) {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description:
-          'Measure datetime is required and must be a valid date',
-      })
-    }
-
-    if (!measure_type || !['WATER', 'GAS'].includes(measure_type)) {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description:
-          'Measure type is required and must be either WATER or GAS',
-      })
-    }
+    const base64Image = extractBase64FromDataUri(image) as string
 
     // Verifica se já existe uma leitura no mês para o tipo especificado
     const startOfMonth = moment(measure_datetime).startOf('month').toDate()
@@ -88,6 +44,7 @@ export const uploadMeasure = async (req: Request, res: Response) => {
         .status(500)
         .json({ message: 'Failed to process image', error: geminiResult.error })
     }
+
     const measure = new Measure({
       customer_code,
       measure_datetime,
@@ -115,26 +72,6 @@ export const confirmMeasure = async (req: Request, res: Response) => {
   try {
     const { measure_uuid, confirmed_value } = req.body
 
-    // Validar o tipo de dados dos parâmetros
-    if (!measure_uuid || typeof measure_uuid !== 'string') {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description: 'Measure UUID is required and must be a string.',
-      })
-    }
-
-    if (
-      typeof confirmed_value !== 'string' ||
-      !/^\d+(\.\d+)?$/.test(confirmed_value)
-    ) {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description:
-          'Confirmed value must be a string representing a decimal number.',
-      })
-    }
-
-    // Verificar se o código de leitura informado existe
     const measure = await Measure.findOne({ measure_uuid })
 
     if (!measure) {
@@ -144,7 +81,6 @@ export const confirmMeasure = async (req: Request, res: Response) => {
       })
     }
 
-    // Verificar se o código de leitura já foi confirmado
     if (measure.has_confirmed) {
       return res.status(409).json({
         error_code: 'CONFIRMATION_DUPLICATE',
@@ -152,7 +88,6 @@ export const confirmMeasure = async (req: Request, res: Response) => {
       })
     }
 
-    // Atualizar o valor confirmado e marcar como confirmado
     measure.measure_value = confirmed_value
     measure.has_confirmed = true
     await measure.save()
@@ -166,35 +101,15 @@ export const confirmMeasure = async (req: Request, res: Response) => {
 
 export const listMeasuresByCustomer = async (req: Request, res: Response) => {
   try {
-    const { customerCode } = req.params // Usar "customerCode" para o parâmetro de rota
+    const { customerCode } = req.params
     const { measure_type } = req.query
 
-    // Validar o código do cliente
-    if (!customerCode || typeof customerCode !== 'string') {
-      return res.status(400).json({
-        error_code: 'INVALID_DATA',
-        error_description: 'Customer code is required and must be a string.',
-      })
-    }
-
-    // Validação do parâmetro `measure_type`, se fornecido
-    const validMeasureTypes = ['WATER', 'GAS']
-    let query: any = { customer_code: customerCode } // Inicializando a query
+    let query: any = { customer_code: customerCode }
 
     if (measure_type) {
-      if (
-        typeof measure_type !== 'string' ||
-        !validMeasureTypes.includes(measure_type.toUpperCase())
-      ) {
-        return res.status(400).json({
-          error_code: 'INVALID_TYPE',
-          error_description: 'Measurement type not allowed',
-        })
-      }
-      query.measure_type = measure_type.toUpperCase() // Adicionando o filtro de tipo
+      query.measure_type = measure_type.toString().toUpperCase()
     }
 
-    // Consultar medidas no banco de dados
     const measures = await Measure.find(query).select(
       'measure_uuid measure_datetime measure_type has_confirmed image_url -_id',
     )
