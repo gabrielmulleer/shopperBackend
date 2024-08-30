@@ -19,6 +19,7 @@ build/
 
 # Environment variables
 .env
+.env*.local
 
 # IDEs and editors
 .vscode/
@@ -29,3 +30,6 @@ build/
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+# Temporary files
+temp/

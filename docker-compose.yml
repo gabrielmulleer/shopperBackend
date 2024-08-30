@@ -1,14 +1,30 @@
 version: '3.8'
 
 services:
-  app:
+  backend:
     build: .
     ports:
-      - '3000:3000'
+      - '${PORT}:${PORT}'
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      NODE_ENV: production
+      PORT: ${PORT}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      MONGO_URI: ${MONGO_URI}
+    depends_on:
+      - mongo
+    # Comando de entrada para o ambiente de produção
+    command: ['node', 'dist/server.js']
+
+  mongo:
+    image: mongo:6
+    ports:
+      - '27017:27017'
     volumes:
-      - .:/app
-    command: npm run dev
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: teste_shopper_db
+
+volumes:
+  mongo-data:
