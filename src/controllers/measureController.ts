@@ -111,7 +111,7 @@ export const listMeasuresByCustomer = async (req: Request, res: Response) => {
     }
 
     const measures = await Measure.find(query).select(
-      'measure_uuid measure_datetime measure_type has_confirmed image_url -_id',
+      'measure_uuid measure_datetime measure_value measure_type has_confirmed image_url -_id',
     )
 
     if (measures.length === 0) {
