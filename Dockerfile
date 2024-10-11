@@ -7,14 +7,17 @@ WORKDIR /usr/src/app
 # Copiar os arquivos de configuração do npm para o diretório de trabalho
 COPY package*.json ./
 
-# Instalar as dependências do projeto
-RUN npm install --only=production
+# Instalar as dependências de desenvolvimento e produção
+RUN npm install
 
 # Copiar o restante do código da aplicação
 COPY . .
 
 # Compilar o código TypeScript para JavaScript
 RUN npm run build
+
+# Remover dependências de desenvolvimento para reduzir o tamanho da imagem
+RUN npm prune --production
 
 # Definir a variável de ambiente NODE_ENV como produção
 ENV NODE_ENV=production
